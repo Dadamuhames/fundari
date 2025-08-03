@@ -15,12 +15,10 @@ public class TelegramBotConfig {
 
   @Bean
   public SetWebhook setWebhook() {
-    log.info("Webhook url: {}", telegramProperties.getWebhookUrl());
-    log.info("Webhook secret: {}", telegramProperties.getSecret());
-
     return SetWebhook.builder()
         .url(telegramProperties.getWebhookUrl())
         .secretToken(telegramProperties.getSecret())
+        .dropPendingUpdates(true)
         .build();
   }
 

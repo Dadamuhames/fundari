@@ -1,5 +1,6 @@
 package com.msd.fundari.entity.redis;
 
+import com.msd.fundari.utils.enums.StartupStage;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -9,27 +10,25 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-@RedisHash("businessApplicationForm")
-public class BusinessApplicationForm {
+@RedisHash("startupApplicationForm")
+public class StartupApplicationForm {
   @Id private Long telegramId;
 
   private String projectName;
 
-  private String industry;
+  private StartupStage stage;
 
-  private String businessAge;
+  private String description;
 
-  private BigDecimal avgMonthlyProfit;
+  private BigDecimal lastMonthRevenue;
 
-  private BigDecimal netProfit;
+  private Integer activeUserCount;
 
-  private BigDecimal estimateValueOfAssets;
+  private BigDecimal investedMoneyAmount;
 
   private Integer teamSize;
 
-  private boolean hasAssets;
-
-  private boolean hasDebtsOrLoans;
+  private String competitors;
 
   private String regionOfActivity;
 }

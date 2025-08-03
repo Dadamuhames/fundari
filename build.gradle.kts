@@ -139,6 +139,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.8.9")
 
+    implementation("org.reflections:reflections:0.10.2")
+
+
     // Logging
     implementation("org.slf4j:slf4j-api:2.0.16")
     implementation("org.slf4j:slf4j-log4j12:2.0.16")

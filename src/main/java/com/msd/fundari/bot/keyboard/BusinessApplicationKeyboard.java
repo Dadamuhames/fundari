@@ -26,6 +26,7 @@ public class BusinessApplicationKeyboard {
     ReplyKeyboardMarkup replyKeyboardMarkup =
         new ReplyKeyboardMarkup(List.of(rowOne, rowTwo, rowThree, rowFour));
     replyKeyboardMarkup.setResizeKeyboard(true);
+    replyKeyboardMarkup.setOneTimeKeyboard(true);
 
     return replyKeyboardMarkup;
   }
@@ -46,6 +47,7 @@ public class BusinessApplicationKeyboard {
     ReplyKeyboardMarkup replyKeyboardMarkup =
         new ReplyKeyboardMarkup(List.of(rowOne, rowTwo, rowThree));
     replyKeyboardMarkup.setResizeKeyboard(true);
+    replyKeyboardMarkup.setOneTimeKeyboard(true);
 
     return replyKeyboardMarkup;
   }

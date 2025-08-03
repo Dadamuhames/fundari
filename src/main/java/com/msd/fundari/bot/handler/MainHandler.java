@@ -31,10 +31,6 @@ public class MainHandler implements UpdateHandler {
     Long chatId =
         message != null ? message.getChatId() : update.getCallbackQuery().getMessage().getChatId();
 
-    if (message != null && message.isCommand() && message.getText().equals("/start")) {
-      botStateService.setState(update.getMessage().getChatId(), BotState.IDLE);
-    }
-
     boolean isAuthenticated = userService.isAuthenticated(chatId);
 
     BotState state = botStateService.getState(chatId);

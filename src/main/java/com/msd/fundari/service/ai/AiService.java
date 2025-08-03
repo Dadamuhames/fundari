@@ -38,8 +38,6 @@ public class AiService {
 
     Prompt prompt = new Prompt(List.of(systemMessage, message), options);
 
-    ChatResponse chatResponse = chatModel.call(prompt);
-
-    return chatResponse;
+      return chatModel.call(prompt);
   }
 }

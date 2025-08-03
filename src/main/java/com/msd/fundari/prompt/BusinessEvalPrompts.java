@@ -11,14 +11,22 @@ import java.nio.file.Files;
 
 @Slf4j
 public class BusinessEvalPrompts {
-  public static String businessEvalSystemPrompt() {
+  public static String readFile(final String filePath) {
     try {
-      File file = ResourceUtils.getFile("classpath:prompts/businessEvaluation.txt");
+      File file = ResourceUtils.getFile(String.format("classpath:prompts/%s", filePath));
       return Files.readString(file.toPath(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       log.error("Prompt File not found: {}", e.getMessage());
     }
 
     return null;
+  }
+
+  public static String businessEvalSystemPrompt() {
+    return readFile("businessEvaluation.txt");
+  }
+
+  public static String startupEvalSystemPrompt() {
+    return readFile("startupEvaluation.txt");
   }
 }

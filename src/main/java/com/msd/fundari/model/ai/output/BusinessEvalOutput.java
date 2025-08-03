@@ -1,26 +1,39 @@
 package com.msd.fundari.model.ai.output;
 
-public record BusinessEvalOutput(Evaluation evaluation, String methodology) {
+import lombok.Data;
+
+
+@Data
+public class BusinessEvalOutput {
+  private Evaluation evaluation;
+
+  private String methodology;
 
   public String toString(final String projectName) {
     return String.format("Preliminary Valuation Report for %s:\n", projectName)
-        + String.format("Estimated Value: %s\n\n", evaluation.estimatedValue())
-        + evaluation.basedOn().toString()
-        + String.format("Recommendation: %s\n\n", evaluation.recommendation())
+        + String.format("Estimated Value: %s\n\n", evaluation.getEstimatedValue())
+        + evaluation.getBasedOn().toString()
+        + String.format("Recommendation: %s\n\n", evaluation.getRecommendation())
         + String.format("Methodology: %s\n\n", methodology)
         + "*This is a preliminary estimate. Final valuation may vary with full due diligence.*";
   }
 }
 
-record Evaluation(String estimatedValue, BasedOn basedOn, String recommendation) {}
+@Data
+class Evaluation {
+  private String estimatedValue;
+  private BasedOn basedOn;
+  private String recommendation;
+}
 
-record BasedOn(
-    String industry,
-    String revenue,
-    String netProfit,
-    String growth,
-    String stage,
-    String methodUsed) {
+@Data
+class BasedOn {
+  private String industry;
+  private String revenue;
+  private String netProfit;
+  private String growth;
+  private String stage;
+  private String methodUsed;
 
   @Override
   public String toString() {

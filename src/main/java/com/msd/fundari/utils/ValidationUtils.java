@@ -1,5 +1,9 @@
 package com.msd.fundari.utils;
 
+import com.msd.fundari.bot.FundariBot;
+import com.msd.fundari.bot.keyboard.MainKeyboards;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
@@ -18,5 +22,19 @@ public class ValidationUtils {
     }
     // Matches an optional sign (+ or -) followed by one or more digits
     return str.matches("^-?\\d+$");
+  }
+
+  public static boolean isYesOrNo(
+      final String answer, final FundariBot fundariBot, final Long chatId) {
+    if (!answer.equals("Yes") && !answer.equals("No")) {
+      ReplyKeyboardMarkup yesNoKeyboard = MainKeyboards.yesNoKeyboard();
+      fundariBot.sendMessage(
+          chatId,
+          "Есть ли у бизнеса помещения или оборудование на балансе? (Yes or No)",
+          yesNoKeyboard);
+      return false;
+    }
+
+    return true;
   }
 }

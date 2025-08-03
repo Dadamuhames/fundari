@@ -1,4 +1,4 @@
-package com.msd.fundari.service.bot;
+package com.msd.fundari.bot.controller;
 
 import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.bot.keyboard.BusinessApplicationKeyboard;
@@ -7,28 +7,33 @@ import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.BusinessApplicationForm;
 import com.msd.fundari.model.ai.output.BusinessEvalOutput;
 import com.msd.fundari.service.ai.BusinessEvalAiService;
+import com.msd.fundari.service.bot.ApplicationService;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.service.bot.redis.BusinessApplicationFormService;
 import com.msd.fundari.utils.ValidationUtils;
+import com.msd.fundari.utils.annotation.BotStateController;
+import com.msd.fundari.utils.annotation.BotStateHandler;
 import com.msd.fundari.utils.exception.BotException;
 import com.msd.fundari.utils.telegram.BotState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.math.BigDecimal;
 
 @Slf4j
-@Service
+@Component
+@BotStateController
 @RequiredArgsConstructor
-public class BusinessProcessService {
+public class BusinessStateController {
   private final BusinessApplicationFormService businessApplicationFormService;
   private final BotStateService botStateService;
   private final ApplicationService applicationService;
   private final BusinessEvalAiService businessEvalAiService;
 
+  @BotStateHandler(BotState.BUSINESS_PROJECT_NAME)
   public void processProjectName(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String name = message.getText();
@@ -44,6 +49,7 @@ public class BusinessProcessService {
         BusinessApplicationKeyboard.industryKeyboard());
   }
 
+  @BotStateHandler(BotState.BUSINESS_INDUSTRY)
   public void processIndustry(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String industry = message.getText();
@@ -56,6 +62,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Сколько лет работает бизнес?");
   }
 
+  @BotStateHandler(BotState.BUSINESS_BUSINESS_AGE)
   public void processBusinessAge(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String businessAge = message.getText();
@@ -75,6 +82,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Какая средняя выручка в месяц (в USD)?");
   }
 
+  @BotStateHandler(BotState.BUSINESS_AVG_MONTHLY_PROFIT)
   public void processAvgMonthlyProfit(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String avgMonthlyProfit = message.getText();
@@ -96,6 +104,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Какая чистая прибыль в месяц (в USD)?");
   }
 
+  @BotStateHandler(BotState.BUSINESS_NET_PROFIT)
   public void processNetProfit(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String netProfit = message.getText();
@@ -120,16 +129,12 @@ public class BusinessProcessService {
         chatId, "Есть ли у бизнеса помещения или оборудование на балансе?", yesNoKeyboard);
   }
 
+  @BotStateHandler(BotState.BUSINESS_HAS_ASSETS)
   public void processHasAssets(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String answer = message.getText();
 
-    if (!answer.equals("Yes") && !answer.equals("No")) {
-      ReplyKeyboardMarkup yesNoKeyboard = MainKeyboards.yesNoKeyboard();
-      fundariBot.sendMessage(
-          chatId,
-          "Есть ли у бизнеса помещения или оборудование на балансе? (Yes or No)",
-          yesNoKeyboard);
+    if (!ValidationUtils.isYesOrNo(answer, fundariBot, chatId)) {
       return;
     }
 
@@ -149,6 +154,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Сколько сотрудников работает?");
   }
 
+  @BotStateHandler(BotState.BUSINESS_ESTIMATE_VALUE_OF_ASSETS)
   public void processValueOfAssets(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String valueOfAssets = message.getText();
@@ -170,6 +176,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Сколько сотрудников работает?");
   }
 
+  @BotStateHandler(BotState.BUSINESS_TEAM_SIZE)
   public void processTeamSize(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String teamSize = message.getText();
@@ -192,13 +199,12 @@ public class BusinessProcessService {
         chatId, "Есть ли задолженности или кредиты?", MainKeyboards.yesNoKeyboard());
   }
 
+  @BotStateHandler(BotState.BUSINESS_HAS_DEBTS_OR_LOANS)
   public void processDebtAndLoans(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String answer = message.getText();
 
-    if (!answer.equals("Yes") && !answer.equals("No")) {
-      ReplyKeyboardMarkup yesNoKeyboard = MainKeyboards.yesNoKeyboard();
-      fundariBot.sendMessage(chatId, "Есть ли задолженности или кредиты?", yesNoKeyboard);
+    if (!ValidationUtils.isYesOrNo(answer, fundariBot, chatId)) {
       return;
     }
 
@@ -214,6 +220,7 @@ public class BusinessProcessService {
     fundariBot.sendMessage(chatId, "Где работает бизнес?", regionKeyboard);
   }
 
+  @BotStateHandler(BotState.BUSINESS_REGION_OF_ACTIVITY)
   public void processRegionOfActivity(final FundariBot fundariBot, final Message message) {
     Long chatId = message.getChatId();
     String region = message.getText();
@@ -237,5 +244,7 @@ public class BusinessProcessService {
     String report = aiOutput.toString(form.getProjectName());
 
     fundariBot.sendMessage(chatId, report, MainKeyboards.responseKeyboard());
+
+    businessApplicationFormService.clearForm(chatId);
   }
 }
