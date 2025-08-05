@@ -4,6 +4,7 @@ import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.UserEntity;
 import com.msd.fundari.repository.UserRepository;
+import com.msd.fundari.service.I18nMessageService;
 import com.msd.fundari.service.UserService;
 import com.msd.fundari.service.bot.MessageService;
 import com.msd.fundari.service.bot.redis.BotStateService;
@@ -24,9 +25,12 @@ public class MainStateController {
   private final UserService userService;
   private final BotStateService botStateService;
   private final MessageService messageService;
+  private final MainKeyboards mainKeyboards;
+  private final I18nMessageService i18nMessageService;
 
   @BotStateHandler(BotState.LANGUAGE_SELECT)
-  public void handleLanguageSelect(final FundariBot fundariBot, final Message message) {
+  public void handleLanguageSelect(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     UserEntity user = userService.getUserByChatId(chatId);
@@ -34,7 +38,7 @@ public class MainStateController {
     Languages language = (Languages) Languages.EN.valueOfLabel(message.getText());
 
     if (language == null) {
-      fundariBot.sendMessage(chatId, "Выберите язык:", MainKeyboards.languageKeyboard());
+      fundariBot.sendMessage(chatId, "Выберите язык:", mainKeyboards.languageKeyboard());
       return;
     }
 
@@ -43,17 +47,21 @@ public class MainStateController {
     userRepository.save(user);
 
     botStateService.setState(chatId, BotState.IDLE);
-    fundariBot.sendMessage(chatId, "Веберите секцию:", MainKeyboards.idleKeyboard());
+
+    String chooseSection = i18nMessageService.message("chooseSection", lang);
+    fundariBot.sendMessage(chatId, chooseSection, mainKeyboards.idleKeyboard(language.toString()));
   }
 
   @BotStateHandler(BotState.IDLE)
-  public void handleSectionSelect(final FundariBot fundariBot, final Message message) {
+  public void handleSectionSelect(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String messageText = message.getText();
 
     switch (messageText) {
-      case "\uD83E\uDDEE Evaluate project" -> messageService.startEvaluation(fundariBot, message);
+      case "\uD83E\uDDEE Evaluate project" ->
+          messageService.startEvaluation(fundariBot, message, lang);
 
       case "\uD83D\uDCE9 Contact Support" -> messageService.contactSupport(fundariBot, message);
 
@@ -64,28 +72,27 @@ public class MainStateController {
   }
 
   @BotStateHandler(BotState.PROJECT_TYPE)
-  public void selectService(final FundariBot fundariBot, final Message message) {
+  public void selectService(final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     ProjectType projectType = (ProjectType) ProjectType.IDEA.valueOfLabel(message.getText());
 
+    String selectProjectType = i18nMessageService.message("selectProjectType", lang);
+
     if (projectType == null) {
-      fundariBot.sendMessage(
-          chatId,
-          "What kind of project is this? (Choose from the following)",
-          MainKeyboards.serviceKeyboard());
+      fundariBot.sendMessage(chatId, selectProjectType, mainKeyboards.serviceKeyboard(lang));
       return;
     }
 
     switch (projectType) {
       case BUSINESS ->
-          messageService.startEvaluation(fundariBot, message, BotState.BUSINESS_PROJECT_NAME);
+          messageService.startEvaluation(fundariBot, message, BotState.BUSINESS_PROJECT_NAME, lang);
 
       case IDEA ->
-          messageService.startEvaluation(fundariBot, message, BotState.IDEA_PROJECT_NAME);
+          messageService.startEvaluation(fundariBot, message, BotState.IDEA_PROJECT_NAME, lang);
 
       case STARTUP ->
-          messageService.startEvaluation(fundariBot, message, BotState.START_UP_PROJECT_NAME);
+          messageService.startEvaluation(fundariBot, message, BotState.START_UP_PROJECT_NAME, lang);
 
       default -> {}
     }

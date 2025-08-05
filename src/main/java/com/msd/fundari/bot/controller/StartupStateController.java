@@ -6,10 +6,12 @@ import com.msd.fundari.bot.keyboard.StartupApplicationKeyboard;
 import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.StartupApplicationForm;
 import com.msd.fundari.model.ai.output.StartupEvalOutput;
+import com.msd.fundari.service.I18nMessageService;
 import com.msd.fundari.service.ai.StartupEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.service.bot.redis.StartupApplicationFormService;
+import com.msd.fundari.utils.KeyboardValidation;
 import com.msd.fundari.utils.ValidationUtils;
 import com.msd.fundari.utils.annotation.BotStateController;
 import com.msd.fundari.utils.annotation.BotStateHandler;
@@ -22,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.math.BigDecimal;
-
 @Slf4j
 @Component
 @BotStateController
@@ -32,9 +33,14 @@ public class StartupStateController {
   private final ApplicationService applicationService;
   private final StartupApplicationFormService startupApplicationFormService;
   private final StartupEvalAiService startupEvalAiService;
+  private final StartupApplicationKeyboard startupApplicationKeyboard;
+  private final MainKeyboards mainKeyboards;
+  private final KeyboardValidation keyboardValidation;
+  private final I18nMessageService i18nMessageService;
 
   @BotStateHandler(BotState.START_UP_PROJECT_NAME)
-  public void processProjectName(final FundariBot fundariBot, final Message message) {
+  public void processProjectName(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String name = message.getText();
 
@@ -43,23 +49,25 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_STAGE);
+    String startupInquireStartupStage = i18nMessageService.message("startupInquireStartupStage", lang);
     fundariBot.sendMessage(
         chatId,
-        "На какой стадии сейчас твой стартап?",
-        StartupApplicationKeyboard.startupStageKeyboard());
+        startupInquireStartupStage,
+        startupApplicationKeyboard.startupStageKeyboard(lang));
   }
 
   @BotStateHandler(BotState.START_UP_STAGE)
-  public void processStage(final FundariBot fundariBot, final Message message) {
+  public void processStage(final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     StartupStage stage = (StartupStage) StartupStage.IDEA.valueOfLabel(message.getText());
 
     if (stage == null) {
+      String startupInquireStartupStageAgain = i18nMessageService.message("startupInquireStartupStageAgain", lang);
       fundariBot.sendMessage(
           chatId,
-          "На какой стадии сейчас твой стартап? Выберите вариант ниже:",
-          StartupApplicationKeyboard.startupStageKeyboard());
+          startupInquireStartupStageAgain,
+          startupApplicationKeyboard.startupStageKeyboard(lang));
       return;
     }
 
@@ -68,12 +76,15 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_DESC);
+    String startupInquireDescription = i18nMessageService.message("startupInquireDescription", lang);
     fundariBot.sendMessage(
-        chatId, "Опиши кратко, чем занимается стартап. (Можно в 1-2 предложениях)");
+        chatId,
+        startupInquireDescription,
+        MainKeyboards.replyKeyboardRemove());
   }
 
   @BotStateHandler(BotState.START_UP_DESC)
-  public void processDesc(final FundariBot fundariBot, final Message message) {
+  public void processDesc(final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String desc = message.getText();
@@ -83,17 +94,22 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_HAS_LAST_MONTH_PROFIT);
+    String startupInquireHasLastMonthProfit = i18nMessageService.message("startupInquireHasLastMonthProfit", lang);
     fundariBot.sendMessage(
-        chatId, "Есть ли у вас выручка за последний месяц?", MainKeyboards.yesNoKeyboard());
+        chatId, startupInquireHasLastMonthProfit, mainKeyboards.yesNoKeyboard(lang));
   }
 
   @BotStateHandler(BotState.START_UP_HAS_LAST_MONTH_PROFIT)
-  public void processHasLastMonthProfit(final FundariBot fundariBot, final Message message) {
+  public void processHasLastMonthProfit(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String answer = message.getText();
 
-    if (!ValidationUtils.isYesOrNo(answer, fundariBot, chatId)) {
+    if (!keyboardValidation.isYesOrNo(answer, lang)) {
+      String startupInquireHasLastMonthProfitAgain = i18nMessageService.message("startupInquireHasLastMonthProfitAgain", lang);
+      fundariBot.sendMessage(
+              chatId, startupInquireHasLastMonthProfitAgain, mainKeyboards.yesNoKeyboard(lang));
       return;
     }
 
@@ -101,21 +117,29 @@ public class StartupStateController {
 
     if (hasProfit) {
       botStateService.setState(chatId, BotState.START_UP_LAST_MONTH_PROFIT);
-      fundariBot.sendMessage(chatId, "Сколько составила выручка в USD?");
+      String startupInquireLastMonthProfit = i18nMessageService.message("startupInquireLastMonthProfit", lang);
+      fundariBot.sendMessage(
+          chatId, startupInquireLastMonthProfit, MainKeyboards.replyKeyboardRemove());
     } else {
       botStateService.setState(chatId, BotState.START_UP_ACTIVE_USERS);
-      fundariBot.sendMessage(chatId, "Сколько всего у вас активных пользователей?");
+      String startupInquireActiveUsers = i18nMessageService.message("startupInquireActiveUsers", lang);
+      fundariBot.sendMessage(
+          chatId,
+          startupInquireActiveUsers,
+          MainKeyboards.replyKeyboardRemove());
     }
   }
 
   @BotStateHandler(BotState.START_UP_LAST_MONTH_PROFIT)
-  public void processLastMonthProfit(final FundariBot fundariBot, final Message message) {
+  public void processLastMonthProfit(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String profit = message.getText();
 
     if (!ValidationUtils.isNumeric(profit)) {
-      fundariBot.sendMessage(chatId, "Сколько составила выручка в USD?");
+      String startupInquireLastMonthProfitAgain = i18nMessageService.message("startupInquireLastMonthProfitAgain", lang);
+      fundariBot.sendMessage(chatId, startupInquireLastMonthProfitAgain);
       return;
     }
 
@@ -126,17 +150,21 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_ACTIVE_USERS);
-    fundariBot.sendMessage(chatId, "Сколько всего у вас активных пользователей?");
+    String startupInquireActiveUsers = i18nMessageService.message("startupInquireActiveUsers", lang);
+    fundariBot.sendMessage(
+        chatId, startupInquireActiveUsers, MainKeyboards.replyKeyboardRemove());
   }
 
   @BotStateHandler(BotState.START_UP_ACTIVE_USERS)
-  public void processActiveUserCount(final FundariBot fundariBot, final Message message) {
+  public void processActiveUserCount(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String userCount = message.getText();
 
     if (!ValidationUtils.isInteger(userCount)) {
-      fundariBot.sendMessage(chatId, "Сколько всего у вас активных пользователей?");
+      String startupInquireActiveUsersAgain = i18nMessageService.message("startupInquireActiveUsersAgain", lang);
+      fundariBot.sendMessage(chatId, startupInquireActiveUsersAgain);
       return;
     }
 
@@ -147,18 +175,21 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_INVESTMENT);
-    fundariBot.sendMessage(chatId, "Сколько было инвестиций в стартап на текущий момент?");
+    String startupInquireInvestment = i18nMessageService.message("startupInquireInvestment", lang);
+    fundariBot.sendMessage(chatId, startupInquireInvestment);
   }
 
   @BotStateHandler(BotState.START_UP_INVESTMENT)
-  public void processInvestment(final FundariBot fundariBot, final Message message) {
+  public void processInvestment(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String investment = message.getText();
 
     if (!ValidationUtils.isNumeric(investment)) {
-      botStateService.setState(chatId, BotState.START_UP_INVESTMENT);
-      fundariBot.sendMessage(chatId, "Сколько было инвестиций в стартап на текущий момент?");
+      String startupInquireInvestmentAgain = i18nMessageService.message("startupInquireInvestmentAgain", lang);
+      fundariBot.sendMessage(chatId, startupInquireInvestmentAgain);
+      return;
     }
 
     BigDecimal investmentAmount = new BigDecimal(investment);
@@ -168,17 +199,20 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_TEAM_SIZE);
-    fundariBot.sendMessage(chatId, "Сколько сотрудников работает в проекте (включая фаундеров)?");
+    String startupInquireTeamSize = i18nMessageService.message("startupInquireTeamSize", lang);
+    fundariBot.sendMessage(chatId, startupInquireTeamSize);
   }
 
   @BotStateHandler(BotState.START_UP_TEAM_SIZE)
-  public void processTeamSize(final FundariBot fundariBot, final Message message) {
+  public void processTeamSize(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String teamSizeStr = message.getText();
 
     if (!ValidationUtils.isInteger(teamSizeStr)) {
-      fundariBot.sendMessage(chatId, "Сколько сотрудников работает в проекте (включая фаундеров)?");
+      String startupInquireTeamSizeAgain = i18nMessageService.message("startupInquireTeamSizeAgain", lang);
+      fundariBot.sendMessage(chatId, startupInquireTeamSizeAgain);
       return;
     }
 
@@ -189,11 +223,13 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_COMPETITION_INFO);
-    fundariBot.sendMessage(chatId, "Кто ваши конкуренты и в чем ваше отличие?");
+    String startupInquireCompetitionInfo = i18nMessageService.message("startupInquireCompetitionInfo", lang);
+    fundariBot.sendMessage(chatId, startupInquireCompetitionInfo);
   }
 
   @BotStateHandler(BotState.START_UP_COMPETITION_INFO)
-  public void processCompetitionInfo(final FundariBot fundariBot, final Message message) {
+  public void processCompetitionInfo(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String competitionInfo = message.getText();
@@ -203,11 +239,13 @@ public class StartupStateController {
     startupApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.START_UP_REGION_OF_ACTIVITY);
-    fundariBot.sendMessage(chatId, "Где работает стартап?");
+    String startupInquireRegionOfActivity = i18nMessageService.message("startupInquireRegionOfActivity", lang);
+    fundariBot.sendMessage(chatId, startupInquireRegionOfActivity);
   }
 
   @BotStateHandler(BotState.START_UP_REGION_OF_ACTIVITY)
-  public void processRegionOfActivity(final FundariBot fundariBot, final Message message) {
+  public void processRegionOfActivity(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     String region = message.getText();
@@ -230,7 +268,7 @@ public class StartupStateController {
 
     String report = aiOutput.toString(form.getProjectName());
 
-    fundariBot.sendMessage(chatId, report, MainKeyboards.responseKeyboard());
+    fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
 
     startupApplicationFormService.clearForm(chatId);
   }

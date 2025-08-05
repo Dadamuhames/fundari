@@ -1,10 +1,13 @@
 package com.msd.fundari.bot;
 
 import com.msd.fundari.bot.handler.MainHandler;
+import com.msd.fundari.entity.UserEntity;
+import com.msd.fundari.service.UserService;
 import com.msd.fundari.utils.telegram.BaseBot;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.updates.DeleteWebhook;
@@ -17,6 +20,7 @@ import org.telegram.telegrambots.webhook.TelegramWebhookBot;
 public class FundariBot extends BaseBot implements TelegramWebhookBot {
   @Autowired public MainHandler mainHandler;
   @Autowired public SetWebhook setWebhook;
+  @Autowired public UserService userService;
 
   public FundariBot(String botToken) {
     super(botToken);
@@ -36,7 +40,7 @@ public class FundariBot extends BaseBot implements TelegramWebhookBot {
   public void initWebhook() {
     log.info("Registering Telegram webhook...");
     runDeleteWebhook(); // optional: clears old one
-    runSetWebhook();    // must be explicitly called
+    runSetWebhook(); // must be explicitly called
   }
 
   @Override

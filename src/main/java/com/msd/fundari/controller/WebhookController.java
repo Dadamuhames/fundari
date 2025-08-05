@@ -1,7 +1,13 @@
 package com.msd.fundari.controller;
 
 import com.msd.fundari.bot.FundariBot;
+import com.msd.fundari.entity.UserEntity;
+import com.msd.fundari.service.CustomUserDetailService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +22,7 @@ public class WebhookController {
   private final FundariBot fundariBot;
 
   @PostMapping({"/", ""})
-  public BotApiMethod<?> onUpdateReceived(@RequestBody Update update) {
+  public BotApiMethod<?> onUpdateReceived(@RequestBody final Update update) {
     return fundariBot.consumeUpdate(update);
   }
 }

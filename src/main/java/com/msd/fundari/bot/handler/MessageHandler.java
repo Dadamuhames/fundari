@@ -3,6 +3,7 @@ package com.msd.fundari.bot.handler;
 import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.utils.HelperMethods;
+import com.msd.fundari.utils.enums.Languages;
 import com.msd.fundari.utils.telegram.BaseBotInterface;
 import com.msd.fundari.utils.telegram.BotState;
 import com.msd.fundari.utils.telegram.UpdateHandler;
@@ -25,7 +26,8 @@ public class MessageHandler implements UpdateHandler {
   private final ApplicationContext ctx;
 
   @Override
-  public void handleUpdate(Update update, BaseBotInterface bot) {
+  public void handleUpdate(
+      final Update update, final BaseBotInterface bot, final Languages language) {
     FundariBot fundariBot = (FundariBot) bot;
 
     BotState state = botStateService.getState(update.getMessage().getChatId());
@@ -40,7 +42,7 @@ public class MessageHandler implements UpdateHandler {
         String beanName = HelperMethods.toCamelCase(className);
         Object handlerClass = ctx.getBean(beanName);
 
-        handler.invoke(handlerClass, fundariBot, message);
+        handler.invoke(handlerClass, fundariBot, message, language.toString().toLowerCase());
       } catch (Exception e) {
         log.error("Handler invoke error: {}", e.getMessage());
       }

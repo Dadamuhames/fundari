@@ -2,8 +2,10 @@ package com.msd.fundari.bot.handler;
 
 import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.bot.keyboard.MainKeyboards;
+import com.msd.fundari.entity.UserEntity;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.service.UserService;
+import com.msd.fundari.utils.enums.Languages;
 import com.msd.fundari.utils.telegram.BaseBotInterface;
 import com.msd.fundari.utils.telegram.BotState;
 import com.msd.fundari.utils.telegram.UpdateHandler;
@@ -16,13 +18,13 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MainHandler implements UpdateHandler {
+public class MainHandler {
   private final BotStateService botStateService;
   private final UserService userService;
   private final MessageHandler messageHandler;
   private final CommandHandler commandHandler;
+  private final MainKeyboards mainKeyboards;
 
-  @Override
   public void handleUpdate(final Update update, final BaseBotInterface bot) {
     Message message = update.getMessage();
 
@@ -31,20 +33,22 @@ public class MainHandler implements UpdateHandler {
     Long chatId =
         message != null ? message.getChatId() : update.getCallbackQuery().getMessage().getChatId();
 
-    boolean isAuthenticated = userService.isAuthenticated(chatId);
+    UserEntity user = userService.getUserByChatId(chatId);
 
     BotState state = botStateService.getState(chatId);
 
-    if (!isAuthenticated && !state.equals(BotState.LANGUAGE_SELECT)) {
+    if (user == null && !state.equals(BotState.LANGUAGE_SELECT)) {
       botStateService.setState(chatId, BotState.LANGUAGE_SELECT);
-      fundariBot.sendMessage(chatId, "Выберите язык:", MainKeyboards.languageKeyboard());
+      fundariBot.sendMessage(chatId, "Выберите язык:", mainKeyboards.languageKeyboard());
       return;
     }
 
+    Languages language = user != null ? user.getLanguage() : Languages.EN;
+
     if (message != null && message.isCommand()) {
-      commandHandler.handleUpdate(update, fundariBot);
+      commandHandler.handleUpdate(update, fundariBot, language);
     } else if (update.hasMessage()) {
-      messageHandler.handleUpdate(update, fundariBot);
+      messageHandler.handleUpdate(update, fundariBot, language);
     }
   }
 }

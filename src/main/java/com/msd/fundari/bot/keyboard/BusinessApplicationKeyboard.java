@@ -1,27 +1,34 @@
 package com.msd.fundari.bot.keyboard;
 
+import com.msd.fundari.service.I18nMessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.List;
 
+@Component
+@RequiredArgsConstructor
 public class BusinessApplicationKeyboard {
-  public static ReplyKeyboardMarkup industryKeyboard() {
-    KeyboardRow rowOne = new KeyboardRow();
+  private final I18nMessageService i18nMessageService;
 
-    rowOne.add("Торговля");
+  public ReplyKeyboardMarkup industryKeyboard(final String lang) {
+    KeyboardRow rowOne = new KeyboardRow();
+    String trade = i18nMessageService.message("trade", lang);
+    rowOne.add(trade);
 
     KeyboardRow rowTwo = new KeyboardRow();
-
-    rowTwo.add("Услуги");
+    String service = i18nMessageService.message("service", lang);
+    rowTwo.add(service);
 
     KeyboardRow rowThree = new KeyboardRow();
-
-    rowThree.add("Общепит");
+    String food = i18nMessageService.message("foodService", lang);
+    rowThree.add(food);
 
     KeyboardRow rowFour = new KeyboardRow();
-
-    rowFour.add("Производство");
+    String manufacture = i18nMessageService.message("manufacture", lang);
+    rowFour.add(manufacture);
 
     ReplyKeyboardMarkup replyKeyboardMarkup =
         new ReplyKeyboardMarkup(List.of(rowOne, rowTwo, rowThree, rowFour));
@@ -31,18 +38,18 @@ public class BusinessApplicationKeyboard {
     return replyKeyboardMarkup;
   }
 
-  public static ReplyKeyboardMarkup regionOfActivityKeyboard() {
+  public ReplyKeyboardMarkup regionOfActivityKeyboard(final String lang) {
     KeyboardRow rowOne = new KeyboardRow();
-
-    rowOne.add("Ташкент");
+    String tashkent = i18nMessageService.message("tashkent", lang);
+    rowOne.add(tashkent);
 
     KeyboardRow rowTwo = new KeyboardRow();
-
-    rowTwo.add("Регионы");
+    String regions = i18nMessageService.message("regions", lang);
+    rowTwo.add(regions);
 
     KeyboardRow rowThree = new KeyboardRow();
-
-    rowThree.add("Международный рынок");
+    String internationalMarket = i18nMessageService.message("internationalMarket", lang);
+    rowThree.add(internationalMarket);
 
     ReplyKeyboardMarkup replyKeyboardMarkup =
         new ReplyKeyboardMarkup(List.of(rowOne, rowTwo, rowThree));

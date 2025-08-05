@@ -6,10 +6,12 @@ import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.BusinessApplicationForm;
 import com.msd.fundari.model.ai.output.BusinessEvalOutput;
+import com.msd.fundari.service.I18nMessageService;
 import com.msd.fundari.service.ai.BusinessEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.service.bot.redis.BusinessApplicationFormService;
+import com.msd.fundari.utils.KeyboardValidation;
 import com.msd.fundari.utils.ValidationUtils;
 import com.msd.fundari.utils.annotation.BotStateController;
 import com.msd.fundari.utils.annotation.BotStateHandler;
@@ -32,9 +34,14 @@ public class BusinessStateController {
   private final BotStateService botStateService;
   private final ApplicationService applicationService;
   private final BusinessEvalAiService businessEvalAiService;
+  private final BusinessApplicationKeyboard businessApplicationKeyboard;
+  private final I18nMessageService i18nMessageService;
+  private final KeyboardValidation keyboardValidation;
+  private final MainKeyboards mainKeyboards;
 
   @BotStateHandler(BotState.BUSINESS_PROJECT_NAME)
-  public void processProjectName(final FundariBot fundariBot, final Message message) {
+  public void processProjectName(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String name = message.getText();
 
@@ -43,14 +50,16 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_INDUSTRY);
+
+    String enterIndustry = i18nMessageService.message("enterIndustry", lang);
+
     fundariBot.sendMessage(
-        chatId,
-        "В какой сфере работает бизнес? (Веберите вариант или введите свой)",
-        BusinessApplicationKeyboard.industryKeyboard());
+        chatId, enterIndustry, businessApplicationKeyboard.industryKeyboard(lang));
   }
 
   @BotStateHandler(BotState.BUSINESS_INDUSTRY)
-  public void processIndustry(final FundariBot fundariBot, final Message message) {
+  public void processIndustry(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String industry = message.getText();
 
@@ -59,18 +68,23 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_BUSINESS_AGE);
-    fundariBot.sendMessage(chatId, "Сколько лет работает бизнес?");
+
+    String inquireBusinessAge = i18nMessageService.message("inquireBusinessAge", lang);
+
+    fundariBot.sendMessage(chatId, inquireBusinessAge);
   }
 
   @BotStateHandler(BotState.BUSINESS_BUSINESS_AGE)
-  public void processBusinessAge(final FundariBot fundariBot, final Message message) {
+  public void processBusinessAge(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String businessAge = message.getText();
 
     boolean isNumber = ValidationUtils.isNumeric(businessAge);
 
     if (!isNumber) {
-      fundariBot.sendMessage(chatId, "Сколько лет работает бизнес? (Введите число)");
+      String inquireBusinessAge = i18nMessageService.message("inquireBusinessAgeAgain", lang);
+      fundariBot.sendMessage(chatId, inquireBusinessAge);
       return;
     }
 
@@ -79,18 +93,22 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_AVG_MONTHLY_PROFIT);
-    fundariBot.sendMessage(chatId, "Какая средняя выручка в месяц (в USD)?");
+    String inquireAvgMonthlyProfit = i18nMessageService.message("inquireAvgMonthlyProfit", lang);
+    fundariBot.sendMessage(chatId, inquireAvgMonthlyProfit);
   }
 
   @BotStateHandler(BotState.BUSINESS_AVG_MONTHLY_PROFIT)
-  public void processAvgMonthlyProfit(final FundariBot fundariBot, final Message message) {
+  public void processAvgMonthlyProfit(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String avgMonthlyProfit = message.getText();
 
     boolean isNumber = ValidationUtils.isNumeric(avgMonthlyProfit);
 
     if (!isNumber) {
-      fundariBot.sendMessage(chatId, "Какая средняя выручка в месяц (в USD)? (Введите число)");
+      String inquireAvgMonthlyProfitAgain =
+          i18nMessageService.message("inquireAvgMonthlyProfitAgain", lang);
+      fundariBot.sendMessage(chatId, inquireAvgMonthlyProfitAgain);
       return;
     }
 
@@ -101,44 +119,53 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_NET_PROFIT);
-    fundariBot.sendMessage(chatId, "Какая чистая прибыль в месяц (в USD)?");
+    String inquireNetProfit = i18nMessageService.message("inquireNetProfit", lang);
+    fundariBot.sendMessage(chatId, inquireNetProfit);
   }
 
   @BotStateHandler(BotState.BUSINESS_NET_PROFIT)
-  public void processNetProfit(final FundariBot fundariBot, final Message message) {
+  public void processNetProfit(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String netProfit = message.getText();
 
     boolean isNumber = ValidationUtils.isNumeric(netProfit);
 
     if (!isNumber) {
-      fundariBot.sendMessage(chatId, "Какая средняя выручка в месяц (в USD)? (Введите число)");
+      String inquireNetProfitAgain = i18nMessageService.message("inquireNetProfitAgain", lang);
+      fundariBot.sendMessage(chatId, inquireNetProfitAgain);
       return;
     }
 
-    BigDecimal avgProfitDec = new BigDecimal(netProfit);
+    BigDecimal netProfitDec = new BigDecimal(netProfit);
 
     BusinessApplicationForm form = businessApplicationFormService.getForm(chatId);
-    form.setNetProfit(avgProfitDec);
+    form.setNetProfit(netProfitDec);
     businessApplicationFormService.saveForm(chatId, form);
 
-    ReplyKeyboardMarkup yesNoKeyboard = MainKeyboards.yesNoKeyboard();
+    ReplyKeyboardMarkup yesNoKeyboard = mainKeyboards.yesNoKeyboard(lang);
 
     botStateService.setState(chatId, BotState.BUSINESS_HAS_ASSETS);
-    fundariBot.sendMessage(
-        chatId, "Есть ли у бизнеса помещения или оборудование на балансе?", yesNoKeyboard);
+    String inquireHasAssets = i18nMessageService.message("inquireHasAssets", lang);
+    fundariBot.sendMessage(chatId, inquireHasAssets, yesNoKeyboard);
   }
 
   @BotStateHandler(BotState.BUSINESS_HAS_ASSETS)
-  public void processHasAssets(final FundariBot fundariBot, final Message message) {
+  public void processHasAssets(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String answer = message.getText();
 
-    if (!ValidationUtils.isYesOrNo(answer, fundariBot, chatId)) {
+    if (!keyboardValidation.isYesOrNo(answer, lang)) {
+      ReplyKeyboardMarkup yesNoKeyboard = mainKeyboards.yesNoKeyboard(lang);
+      String inquireHasAssets = i18nMessageService.message("inquireHasAssets", lang);
+      fundariBot.sendMessage(chatId, inquireHasAssets, yesNoKeyboard);
       return;
     }
 
-    boolean hasAssets = answer.equals("Yes");
+    String localizedYes = i18nMessageService.message("yes", lang);
+
+    boolean hasAssets = answer.equals(localizedYes);
 
     BusinessApplicationForm form = businessApplicationFormService.getForm(chatId);
     form.setHasAssets(hasAssets);
@@ -146,23 +173,28 @@ public class BusinessStateController {
 
     if (hasAssets) {
       botStateService.setState(chatId, BotState.BUSINESS_ESTIMATE_VALUE_OF_ASSETS);
-      fundariBot.sendMessage(chatId, "Примерная рыночная стоимость активов?");
+      String inquireValueOfAssets = i18nMessageService.message("inquireValueOfAssets", lang);
+      fundariBot.sendMessage(chatId, inquireValueOfAssets);
       return;
     }
 
     botStateService.setState(chatId, BotState.BUSINESS_TEAM_SIZE);
-    fundariBot.sendMessage(chatId, "Сколько сотрудников работает?");
+    String inquireTeamSize = i18nMessageService.message("inquireTeamSize", lang);
+    fundariBot.sendMessage(chatId, inquireTeamSize);
   }
 
   @BotStateHandler(BotState.BUSINESS_ESTIMATE_VALUE_OF_ASSETS)
-  public void processValueOfAssets(final FundariBot fundariBot, final Message message) {
+  public void processValueOfAssets(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String valueOfAssets = message.getText();
 
     boolean isNumber = ValidationUtils.isNumeric(valueOfAssets);
 
     if (!isNumber) {
-      fundariBot.sendMessage(chatId, "Примерная рыночная стоимость активов? (Введите число)");
+      String inquireValueOfAssetsAgain =
+          i18nMessageService.message("inquireValueOfAssetsAgain", lang);
+      fundariBot.sendMessage(chatId, inquireValueOfAssetsAgain);
       return;
     }
 
@@ -173,18 +205,21 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_TEAM_SIZE);
-    fundariBot.sendMessage(chatId, "Сколько сотрудников работает?");
+    String inquireTeamSize = i18nMessageService.message("inquireTeamSize", lang);
+    fundariBot.sendMessage(chatId, inquireTeamSize);
   }
 
   @BotStateHandler(BotState.BUSINESS_TEAM_SIZE)
-  public void processTeamSize(final FundariBot fundariBot, final Message message) {
+  public void processTeamSize(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String teamSize = message.getText();
 
     boolean isNumber = ValidationUtils.isInteger(teamSize);
 
     if (!isNumber) {
-      fundariBot.sendMessage(chatId, "Сколько сотрудников работает? (Введите число)");
+      String inquireTeamSizeAgain = i18nMessageService.message("inquireTeamSizeAgain", lang);
+      fundariBot.sendMessage(chatId, inquireTeamSizeAgain);
       return;
     }
 
@@ -195,33 +230,40 @@ public class BusinessStateController {
     businessApplicationFormService.saveForm(chatId, form);
 
     botStateService.setState(chatId, BotState.BUSINESS_HAS_DEBTS_OR_LOANS);
-    fundariBot.sendMessage(
-        chatId, "Есть ли задолженности или кредиты?", MainKeyboards.yesNoKeyboard());
+    String inquireHasDebtsOrLoans = i18nMessageService.message("inquireHasDebtsOrLoans", lang);
+    fundariBot.sendMessage(chatId, inquireHasDebtsOrLoans, mainKeyboards.yesNoKeyboard(lang));
   }
 
   @BotStateHandler(BotState.BUSINESS_HAS_DEBTS_OR_LOANS)
-  public void processDebtAndLoans(final FundariBot fundariBot, final Message message) {
+  public void processDebtAndLoans(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String answer = message.getText();
 
-    if (!ValidationUtils.isYesOrNo(answer, fundariBot, chatId)) {
+    if (!keyboardValidation.isYesOrNo(answer, lang)) {
+      String inquireHasDebtsOrLoans = i18nMessageService.message("inquireHasDebtsOrLoans", lang);
+      fundariBot.sendMessage(chatId, inquireHasDebtsOrLoans, mainKeyboards.yesNoKeyboard(lang));
       return;
     }
 
-    boolean hasDebts = answer.equals("Yes");
+    String localizedYes = i18nMessageService.message("yes", lang);
+
+    boolean hasDebts = answer.equals(localizedYes);
 
     BusinessApplicationForm form = businessApplicationFormService.getForm(chatId);
     form.setHasDebtsOrLoans(hasDebts);
     businessApplicationFormService.saveForm(chatId, form);
 
-    ReplyKeyboardMarkup regionKeyboard = BusinessApplicationKeyboard.regionOfActivityKeyboard();
+    ReplyKeyboardMarkup regionKeyboard = businessApplicationKeyboard.regionOfActivityKeyboard(lang);
 
     botStateService.setState(chatId, BotState.BUSINESS_REGION_OF_ACTIVITY);
-    fundariBot.sendMessage(chatId, "Где работает бизнес?", regionKeyboard);
+    String inquireRegionOfActivity = i18nMessageService.message("inquireRegionOfActivity", lang);
+    fundariBot.sendMessage(chatId, inquireRegionOfActivity, regionKeyboard);
   }
 
   @BotStateHandler(BotState.BUSINESS_REGION_OF_ACTIVITY)
-  public void processRegionOfActivity(final FundariBot fundariBot, final Message message) {
+  public void processRegionOfActivity(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
     String region = message.getText();
 
@@ -243,7 +285,7 @@ public class BusinessStateController {
 
     String report = aiOutput.toString(form.getProjectName());
 
-    fundariBot.sendMessage(chatId, report, MainKeyboards.responseKeyboard());
+    fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
 
     businessApplicationFormService.clearForm(chatId);
   }

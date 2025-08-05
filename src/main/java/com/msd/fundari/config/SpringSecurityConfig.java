@@ -20,7 +20,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SpringSecurityConfig {
-  private final TelegramAuthFilter telegramAuthFilter;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -32,7 +31,6 @@ public class SpringSecurityConfig {
     http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
-        // .addFilterBefore(telegramAuthFilter, BasicAuthenticationFilter.class)
         .csrf(
             csrf ->
                 csrf.ignoringRequestMatchers("/api/v1/webhook/telegram/**")
@@ -43,6 +41,6 @@ public class SpringSecurityConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
-    return new InMemoryUserDetailsManager(); // No users defined
+    return new InMemoryUserDetailsManager();
   }
 }

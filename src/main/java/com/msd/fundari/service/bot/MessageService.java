@@ -19,18 +19,19 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 @RequiredArgsConstructor
 public class MessageService {
   private final BotStateService botStateService;
+  private final MainKeyboards mainKeyboards;
 
-  public void startEvaluation(final FundariBot fundariBot, final Message message) {
+  public void startEvaluation(final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     botStateService.setState(chatId, BotState.PROJECT_TYPE);
 
     fundariBot.sendMessage(
-        chatId, "What kind of project is this?", MainKeyboards.serviceKeyboard());
+        chatId, "What kind of project is this?", mainKeyboards.serviceKeyboard(lang));
   }
 
   public void startEvaluation(
-      final FundariBot fundariBot, final Message message, final BotState state) {
+      final FundariBot fundariBot, final Message message, final BotState state, final String lang) {
     Long chatId = message.getChatId();
 
     botStateService.setState(chatId, state);
@@ -45,6 +46,6 @@ public class MessageService {
 
   public void changeLanguage(final FundariBot fundariBot, final Long chatId) {
     botStateService.setState(chatId, BotState.LANGUAGE_SELECT);
-    fundariBot.sendMessage(chatId, "Выберите язык:", MainKeyboards.languageKeyboard());
+    fundariBot.sendMessage(chatId, "Выберите язык:", mainKeyboards.languageKeyboard());
   }
 }
