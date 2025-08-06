@@ -2,10 +2,10 @@ package com.msd.fundari.utils.enums;
 
 public enum StartupStage implements LabeledEnum {
   IDEA(new String[] {"Idea", "Идея", "Goya"}),
-  FIRST_CLIENTS(new String[] {"First clients", "Первые клиенты"}),
+  FIRST_CLIENTS(new String[] {"First clients", "Первые клиенты", "Birinchi mijozlar"}),
   MVP(new String[] {"MVP"}),
-  REVENUE(new String[] {"Прибыльный бизнес"}),
-  SCALING(new String[] {"Scaling", "Стабильный рост"});
+  REVENUE(new String[] {"Прибыльный бизнес", "Profitable business", "Foydali biznes"}),
+  SCALING(new String[] {"Scaling", "Стабильный рост", "Barqaror o'sish"});
 
   public final String[] labels;
 

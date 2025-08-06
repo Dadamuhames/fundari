@@ -38,7 +38,10 @@ public class MainStateController {
     Languages language = (Languages) Languages.EN.valueOfLabel(message.getText());
 
     if (language == null) {
-      fundariBot.sendMessage(chatId, "Выберите язык:", mainKeyboards.languageKeyboard());
+      fundariBot.sendMessage(
+          chatId,
+          "Выберите язык:/Tilni tanlang:/Choose language:",
+          mainKeyboards.languageKeyboard());
       return;
     }
 
@@ -48,7 +51,8 @@ public class MainStateController {
 
     botStateService.setState(chatId, BotState.IDLE);
 
-    String chooseSection = i18nMessageService.message("chooseSection", lang);
+    String chooseSection =
+        i18nMessageService.message("chooseSection", language.toString().toLowerCase());
     fundariBot.sendMessage(chatId, chooseSection, mainKeyboards.idleKeyboard(language.toString()));
   }
 
@@ -60,14 +64,25 @@ public class MainStateController {
     String messageText = message.getText();
 
     switch (messageText) {
-      case "\uD83E\uDDEE Evaluate project" ->
+      case "\uD83E\uDDEE Evaluate project",
+          "\uD83E\uDDEE Оценить бизнес",
+          "\uD83E\uDDEE Biznesni baholash" ->
           messageService.startEvaluation(fundariBot, message, lang);
 
-      case "\uD83D\uDCE9 Contact Support" -> messageService.contactSupport(fundariBot, message);
+      case "\uD83D\uDCE9 Contact support",
+          "\uD83D\uDCE9 Связаться с поддержкой",
+          "\uD83D\uDCE9 Yordam bilan bog'lanish" ->
+          messageService.contactSupport(fundariBot, message);
 
-      case "\uD83C\uDF10 Change Language" -> messageService.changeLanguage(fundariBot, chatId);
+      case "\uD83C\uDF10 Change language",
+          "\uD83C\uDF10 Сменить язык",
+          "\uD83C\uDF10 Tilni o'zgartirish" ->
+          messageService.changeLanguage(fundariBot, chatId);
 
-      default -> {}
+      default -> {
+        String chooseSection = i18nMessageService.message("chooseSection", lang);
+        fundariBot.sendMessage(chatId, chooseSection, mainKeyboards.idleKeyboard(lang));
+      }
     }
   }
 

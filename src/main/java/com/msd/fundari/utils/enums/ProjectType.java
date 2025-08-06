@@ -1,9 +1,14 @@
 package com.msd.fundari.utils.enums;
 
 public enum ProjectType implements LabeledEnum {
-  BUSINESS(new String[] {"\uD83E\uDDF1 Running business"}),
-  STARTUP(new String[] {"\uD83D\uDE80 Startup"}),
-  IDEA(new String[] {"\uD83D\uDCA1 Idea"});
+  BUSINESS(
+      new String[] {
+        "\uD83E\uDDF1 Running business",
+        "\uD83E\uDDF1 Действующий бизнес",
+        "\uD83E\uDDF1 Faol biznes"
+      }),
+  STARTUP(new String[] {"\uD83D\uDE80 Startup", "\uD83D\uDE80 Стартап", "\uD83D\uDE80 Startap"}),
+  IDEA(new String[] {"\uD83D\uDCA1 Idea", "\uD83D\uDCA1 Идея", "\uD83D\uDCA1 G'oya"});
 
   public final String[] labels;
 

@@ -4,6 +4,7 @@ import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.UserEntity;
 import com.msd.fundari.repository.UserRepository;
+import com.msd.fundari.service.I18nMessageService;
 import com.msd.fundari.service.UserService;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.utils.annotation.BotStateController;
@@ -20,14 +21,16 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 public class MessageService {
   private final BotStateService botStateService;
   private final MainKeyboards mainKeyboards;
+  private final I18nMessageService i18nMessageService;
 
-  public void startEvaluation(final FundariBot fundariBot, final Message message, final String lang) {
+  public void startEvaluation(
+      final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
 
     botStateService.setState(chatId, BotState.PROJECT_TYPE);
 
-    fundariBot.sendMessage(
-        chatId, "What kind of project is this?", mainKeyboards.serviceKeyboard(lang));
+    String startupSelectProjectType = i18nMessageService.message("startupSelectProjectType", lang);
+    fundariBot.sendMessage(chatId, startupSelectProjectType, mainKeyboards.serviceKeyboard(lang));
   }
 
   public void startEvaluation(
@@ -36,9 +39,9 @@ public class MessageService {
 
     botStateService.setState(chatId, state);
 
-    fundariBot.sendMessage(
-        chatId,
-        "Please enter the name of your project" + "(This will appear in your final report.)");
+    String startupInquireProjectName =
+        i18nMessageService.message("startupInquireProjectName", lang);
+    fundariBot.sendMessage(chatId, startupInquireProjectName);
   }
 
   // TODO

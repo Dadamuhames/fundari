@@ -13,7 +13,7 @@ public class MessageSourceConfig {
     source.setBasenames("i18n/messages"); // base name of the resource bundle
     source.setDefaultEncoding("UTF-8");
     source.setUseCodeAsDefaultMessage(true);
-    source.setCacheSeconds(3600); // Refresh cache once every hour
+    source.setCacheSeconds(10); // Refresh cache once every hour
     return source;
   }
 }
