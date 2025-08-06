@@ -43,6 +43,7 @@ CREATE TABLE idea_application_entity (
     is_concept_only BOOLEAN,
     is_there_similar_products BOOLEAN,
     has_investors BOOLEAN,
+    difference TEXT(5000) DEFAULT NULL,
     UNIQUE (application_id)
 );
 -- rollback DROP TABLE idea_application_entity;

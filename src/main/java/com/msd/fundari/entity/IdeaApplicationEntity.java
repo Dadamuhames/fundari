@@ -34,5 +34,7 @@ public class IdeaApplicationEntity {
 
   private Boolean isThereSimilarProducts;
 
+  private String difference;
+
   private Boolean hasInvestors;
 }

@@ -1,10 +1,10 @@
 package com.msd.fundari.utils.enums;
 
 public enum IdeaTarget implements LabeledEnum {
-  INDIVIDUALS(new String[] {"Idea", "Идея", "Goya"}),
-  BUSINESSES(new String[] {"Idea", "Идея", "Goya"}),
-  GOVERNMENT(new String[] {"Idea", "Идея", "Goya"}),
-  GLOBAL(new String[] {"Idea", "Идея", "Goya"});
+  INDIVIDUALS(new String[] {"Individuals", "Физлица", "Jismoniy shaxslar"}),
+  BUSINESSES(new String[] {"Businesses", "Бизнесы", "Korxonalar"}),
+  GOVERNMENT(new String[] {"Government structures", "Госструктуры", "Hukumat tuzilmalari"}),
+  GLOBAL(new String[] {"Global Market", "Глобальный рынок", "Jahon bozori"});
 
   public final String[] labels;
 
