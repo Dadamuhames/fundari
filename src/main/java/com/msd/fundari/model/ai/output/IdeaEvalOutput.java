@@ -3,7 +3,7 @@ package com.msd.fundari.model.ai.output;
 import lombok.Data;
 
 @Data
-public class StartupEvalOutput {
+public class IdeaEvalOutput {
   private Evaluation evaluation;
   private String methodology;
 
@@ -14,7 +14,7 @@ public class StartupEvalOutput {
     return String.format(
         templateEval,
         projectName,
-        evaluation.getEstimatedValue(),
+        evaluation.getEstimatedPotentialValue(),
         basedOnString,
         evaluation.getRecommendation(),
         methodology);
@@ -22,22 +22,31 @@ public class StartupEvalOutput {
 
   @Data
   public static class Evaluation {
-    private String estimatedValue;
+    private String estimatedPotentialValue;
     private BasedOn basedOn;
     private String recommendation;
   }
 
   @Data
   public static class BasedOn {
-    private String stage;
-    private String revenue;
-    private String activeUsers;
-    private String investment;
-    private String growth;
-    private String methodUsed;
+    private String target;
+    private String differentiation;
+    private String teamStatus;
+    private String developmentStage;
+    private String marketCompetition;
+    private String investorStatus;
+    private String growthPotential;
 
     public String toString(final String template) {
-      return String.format(template, stage, revenue, activeUsers, growth, methodUsed);
+      return String.format(
+          template,
+          target,
+          differentiation,
+          teamStatus,
+          developmentStage,
+          marketCompetition,
+          investorStatus,
+          growthPotential);
     }
   }
 }

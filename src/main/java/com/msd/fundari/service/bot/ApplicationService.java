@@ -1,16 +1,13 @@
 package com.msd.fundari.service.bot;
 
-import com.msd.fundari.entity.StartupApplicationEntity;
+import com.msd.fundari.entity.*;
+import com.msd.fundari.entity.redis.IdeaApplicationForm;
 import com.msd.fundari.entity.redis.StartupApplicationForm;
 import com.msd.fundari.mapper.ApplicationMapper;
-import com.msd.fundari.entity.ApplicationEntity;
-import com.msd.fundari.entity.BusinessApplicationEntity;
-import com.msd.fundari.entity.UserEntity;
 import com.msd.fundari.entity.redis.BusinessApplicationForm;
-import com.msd.fundari.repository.ApplicationRepository;
-import com.msd.fundari.repository.BusinessApplicationRepository;
-import com.msd.fundari.repository.StartupApplicationRepository;
-import com.msd.fundari.repository.UserRepository;
+import com.msd.fundari.repository.*;
+import com.msd.fundari.repository.redis.IdeaApplicationFormRepository;
+import com.msd.fundari.service.UserService;
 import com.msd.fundari.utils.enums.ExceptionType;
 import com.msd.fundari.utils.enums.ProjectType;
 import com.msd.fundari.utils.exception.BotException;
@@ -23,19 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
-  private final UserRepository userRepository;
   private final ApplicationMapper applicationMapper;
   private final ApplicationRepository applicationRepository;
   private final BusinessApplicationRepository businessApplicationRepository;
   private final StartupApplicationRepository startupApplicationRepository;
+  private final IdeaApplicationRepository ideaApplicationRepository;
+  private final UserService userService;
 
   @Transactional
   public ApplicationEntity saveBusinessApplication(
       final Long chatId, final BusinessApplicationForm form) throws BotException {
-    UserEntity user =
-        userRepository
-            .findByTelegramId(chatId)
-            .orElseThrow(() -> new BotException(ExceptionType.USER_NOT_FOUND));
+    UserEntity user = userService.getUser(chatId);
 
     // create application
     ApplicationEntity applicationEntity = new ApplicationEntity();
@@ -60,10 +55,7 @@ public class ApplicationService {
 
   public ApplicationEntity saveStartUpApplication(
       final Long chatId, final StartupApplicationForm form) throws BotException {
-    UserEntity user =
-        userRepository
-            .findByTelegramId(chatId)
-            .orElseThrow(() -> new BotException(ExceptionType.USER_NOT_FOUND));
+    UserEntity user = userService.getUser(chatId);
 
     // crate application
     ApplicationEntity applicationEntity = new ApplicationEntity();
@@ -79,6 +71,30 @@ public class ApplicationService {
     startupApplicationEntity = startupApplicationRepository.saveAndFlush(startupApplicationEntity);
 
     applicationEntity.setStartupApplicationEntity(startupApplicationEntity);
+
+    applicationRepository.save(applicationEntity);
+
+    return applicationEntity;
+  }
+
+  public ApplicationEntity saveIdeaApplication(final Long chatId, final IdeaApplicationForm form)
+      throws BotException {
+
+    UserEntity user = userService.getUser(chatId);
+
+    ApplicationEntity applicationEntity = new ApplicationEntity();
+
+    applicationEntity.setUser(user);
+    applicationEntity.setProjectName(form.getName());
+    applicationEntity.setProjectType(ProjectType.IDEA);
+    applicationEntity = applicationRepository.saveAndFlush(applicationEntity);
+
+    // create idea application
+    IdeaApplicationEntity ideaApplicationEntity = applicationMapper.formToEntity(form);
+    ideaApplicationEntity.setApplication(applicationEntity);
+    ideaApplicationEntity = ideaApplicationRepository.saveAndFlush(ideaApplicationEntity);
+
+    applicationEntity.setIdeaApplicationEntity(ideaApplicationEntity);
 
     applicationRepository.save(applicationEntity);
 

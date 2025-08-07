@@ -29,4 +29,8 @@ public class BusinessEvalPrompts {
   public static String startupEvalSystemPrompt() {
     return readFile("startupEvaluation.txt");
   }
+
+  public static String ideaEvalSystemPrompt() {
+    return readFile("ideaEvaluation.txt");
+  }
 }

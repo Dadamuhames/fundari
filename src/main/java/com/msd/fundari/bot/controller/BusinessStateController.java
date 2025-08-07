@@ -7,6 +7,7 @@ import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.BusinessApplicationForm;
 import com.msd.fundari.model.ai.output.BusinessEvalOutput;
 import com.msd.fundari.service.I18nMessageService;
+import com.msd.fundari.service.ai.AiOutputSerializerService;
 import com.msd.fundari.service.ai.BusinessEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
 import com.msd.fundari.service.bot.redis.BotStateService;
@@ -38,6 +39,7 @@ public class BusinessStateController {
   private final I18nMessageService i18nMessageService;
   private final KeyboardValidation keyboardValidation;
   private final MainKeyboards mainKeyboards;
+  private final AiOutputSerializerService aiOutputSerializerService;
 
   @BotStateHandler(BotState.BUSINESS_PROJECT_NAME)
   public void processProjectName(
@@ -283,7 +285,8 @@ public class BusinessStateController {
     // send the report
     BusinessEvalOutput aiOutput = businessEvalAiService.evaluateBusiness(application);
 
-    String report = aiOutput.toString(form.getProjectName());
+    String report =
+        aiOutputSerializerService.businessEvalToString(aiOutput, form.getProjectName(), lang);
 
     fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
 

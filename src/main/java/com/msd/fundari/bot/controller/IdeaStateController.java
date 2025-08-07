@@ -3,9 +3,14 @@ package com.msd.fundari.bot.controller;
 import com.msd.fundari.bot.FundariBot;
 import com.msd.fundari.bot.keyboard.IdeaApplicationKeyboard;
 import com.msd.fundari.bot.keyboard.MainKeyboards;
+import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.IdeaApplicationForm;
+import com.msd.fundari.model.ai.output.IdeaEvalOutput;
+import com.msd.fundari.model.ai.output.StartupEvalOutput;
 import com.msd.fundari.repository.redis.IdeaApplicationFormRepository;
 import com.msd.fundari.service.I18nMessageService;
+import com.msd.fundari.service.ai.AiOutputSerializerService;
+import com.msd.fundari.service.ai.IdeaEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
 import com.msd.fundari.service.bot.redis.BotStateService;
 import com.msd.fundari.service.bot.redis.IdeaApplicationFormService;
@@ -15,11 +20,14 @@ import com.msd.fundari.utils.annotation.BotStateHandler;
 import com.msd.fundari.utils.enums.HasATeam;
 import com.msd.fundari.utils.enums.IdeaTarget;
 import com.msd.fundari.utils.enums.PrototypeOrConcept;
+import com.msd.fundari.utils.exception.BotException;
 import com.msd.fundari.utils.telegram.BotState;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+@Slf4j
 @Component
 @BotStateController
 @RequiredArgsConstructor
@@ -31,6 +39,8 @@ public class IdeaStateController {
   private final KeyboardValidation keyboardValidation;
   private final I18nMessageService i18nMessageService;
   private final IdeaApplicationKeyboard ideaApplicationKeyboard;
+  private final IdeaEvalAiService ideaEvalAiService;
+  private final AiOutputSerializerService aiOutputSerializerService;
 
   @BotStateHandler(BotState.IDEA_PROJECT_NAME)
   public void processIdeaName(
@@ -191,6 +201,28 @@ public class IdeaStateController {
       return;
     }
 
+    String yesLocalized = i18nMessageService.message("yes", lang);
+    boolean hasInvestors = yesLocalized.equals(answer);
+    IdeaApplicationForm form = ideaApplicationFormService.getForm(chatId);
+    form.setHasInvestors(hasInvestors);
 
+    ApplicationEntity application;
+
+    // save application
+    try {
+      application = applicationService.saveIdeaApplication(chatId, form);
+    } catch (BotException e) {
+      log.error("Message: {}. ChatId: {}", e.getType().getMessage(), chatId);
+      return;
+    }
+
+    // send the report
+    IdeaEvalOutput aiOutput = ideaEvalAiService.evaluateIdea(application);
+
+    String report = aiOutputSerializerService.ideaEvalToString(aiOutput, form.getName(), lang);
+
+    fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
+
+    ideaApplicationFormService.clearForm(chatId);
   }
 }

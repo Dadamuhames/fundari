@@ -2,6 +2,8 @@ package com.msd.fundari.service;
 
 import com.msd.fundari.entity.UserEntity;
 import com.msd.fundari.repository.UserRepository;
+import com.msd.fundari.utils.enums.ExceptionType;
+import com.msd.fundari.utils.exception.BotException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,5 +20,11 @@ public class UserService {
     return userRepository
         .findByTelegramId(telegramId)
         .orElse(UserEntity.builder().telegramId(telegramId).build());
+  }
+
+  public UserEntity getUser(final Long telegramId) {
+    return userRepository
+        .findByTelegramId(telegramId)
+        .orElseThrow(() -> new BotException(ExceptionType.USER_NOT_FOUND));
   }
 }
