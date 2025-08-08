@@ -14,6 +14,7 @@ import com.msd.fundari.utils.enums.Languages;
 import com.msd.fundari.utils.enums.ProjectType;
 import com.msd.fundari.utils.telegram.BotState;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.processing.Find;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
@@ -64,7 +65,7 @@ public class MainStateController {
     String messageText = message.getText();
 
     switch (messageText) {
-      case "\uD83E\uDDEE Evaluate project",
+      case "\uD83E\uDDEE Evaluate Business",
           "\uD83E\uDDEE Оценить бизнес",
           "\uD83E\uDDEE Biznesni baholash" ->
           messageService.startEvaluation(fundariBot, message, lang);
@@ -72,7 +73,7 @@ public class MainStateController {
       case "\uD83D\uDCE9 Contact support",
           "\uD83D\uDCE9 Связаться с поддержкой",
           "\uD83D\uDCE9 Yordam bilan bog'lanish" ->
-          messageService.contactSupport(fundariBot, message);
+          messageService.contactSupport(fundariBot, message, lang);
 
       case "\uD83C\uDF10 Change language",
           "\uD83C\uDF10 Сменить язык",
@@ -101,15 +102,31 @@ public class MainStateController {
 
     switch (projectType) {
       case BUSINESS ->
-          messageService.startEvaluation(fundariBot, message, BotState.BUSINESS_PROJECT_NAME, lang);
+          messageService.inquireProjectName(
+              fundariBot, message, BotState.BUSINESS_PROJECT_NAME, lang);
 
       case IDEA ->
-          messageService.startEvaluation(fundariBot, message, BotState.IDEA_PROJECT_NAME, lang);
+          messageService.inquireProjectName(fundariBot, message, BotState.IDEA_PROJECT_NAME, lang);
 
       case STARTUP ->
-          messageService.startEvaluation(fundariBot, message, BotState.START_UP_PROJECT_NAME, lang);
+          messageService.inquireProjectName(
+              fundariBot, message, BotState.START_UP_PROJECT_NAME, lang);
 
       default -> {}
+    }
+  }
+
+  @BotStateHandler(BotState.EVALUATION_END)
+  public void evalEndHandle(final FundariBot fundariBot, final Message message, final String lang) {
+    String messageText = message.getText();
+
+    String evalNewProj = i18nMessageService.message("evalNewProj", lang);
+    String contactBtnText = i18nMessageService.message("contactButton", lang);
+
+    if (messageText.equals(evalNewProj)) {
+      messageService.startEvaluation(fundariBot, message, lang);
+    } else if (messageText.equals(contactBtnText)) {
+      messageService.contactSupport(fundariBot, message, lang);
     }
   }
 }

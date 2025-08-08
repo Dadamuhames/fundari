@@ -24,7 +24,7 @@ CREATE TABLE business_application_entity (
     business_age VARCHAR(255) NOT NULL,
     avg_monthly_profit DECIMAL(19,4) NOT NULL,
     net_profit DECIMAL(19,4) NOT NULL,
-    estimate_value_of_assets DECIMAL(19,4) NOT NULL,
+    estimate_value_of_assets DECIMAL(19,4) DEFAULT NULL,
     team_size INT NOT NULL,
     has_assets BOOLEAN NOT NULL,
     has_debts_or_loans BOOLEAN NOT NULL,

@@ -8,7 +8,6 @@ import com.msd.fundari.service.UserService;
 import com.msd.fundari.utils.enums.Languages;
 import com.msd.fundari.utils.telegram.BaseBotInterface;
 import com.msd.fundari.utils.telegram.BotState;
-import com.msd.fundari.utils.telegram.UpdateHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +32,7 @@ public class MainHandler {
     Long chatId =
         message != null ? message.getChatId() : update.getCallbackQuery().getMessage().getChatId();
 
-    UserEntity user = userService.getUserByChatId(chatId);
+    UserEntity user = userService.getUserOrNull(chatId);
 
     BotState state = botStateService.getState(chatId);
 

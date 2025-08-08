@@ -32,6 +32,6 @@ public class AiOutputSerializerService {
     String evalTemplate = i18nMessageService.message("ideaEvalString", lang);
     String basedOnTemplate = i18nMessageService.message("ideaBasedOn", lang);
 
-    return output.toString();
+    return output.toString(evalTemplate, basedOnTemplate, name);
   }
 }

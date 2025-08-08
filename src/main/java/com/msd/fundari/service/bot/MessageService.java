@@ -33,7 +33,7 @@ public class MessageService {
     fundariBot.sendMessage(chatId, startupSelectProjectType, mainKeyboards.serviceKeyboard(lang));
   }
 
-  public void startEvaluation(
+  public void inquireProjectName(
       final FundariBot fundariBot, final Message message, final BotState state, final String lang) {
     Long chatId = message.getChatId();
 
@@ -45,7 +45,7 @@ public class MessageService {
   }
 
   // TODO
-  public void contactSupport(final FundariBot fundariBot, final Message message) {}
+  public void contactSupport(final FundariBot fundariBot, final Message message, final String lang) {}
 
   public void changeLanguage(final FundariBot fundariBot, final Long chatId) {
     botStateService.setState(chatId, BotState.LANGUAGE_SELECT);

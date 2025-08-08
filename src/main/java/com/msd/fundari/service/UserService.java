@@ -22,6 +22,10 @@ public class UserService {
         .orElse(UserEntity.builder().telegramId(telegramId).build());
   }
 
+  public UserEntity getUserOrNull(final Long telegramId) {
+    return userRepository.findByTelegramId(telegramId).orElse(null);
+  }
+
   public UserEntity getUser(final Long telegramId) {
     return userRepository
         .findByTelegramId(telegramId)

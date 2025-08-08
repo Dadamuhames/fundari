@@ -35,7 +35,6 @@ public class BusinessApplicationEntity {
   @Column(nullable = false)
   private BigDecimal netProfit;
 
-  @Column(nullable = false)
   private BigDecimal estimateValueOfAssets;
 
   @Column(nullable = false)

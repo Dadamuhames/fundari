@@ -2,7 +2,7 @@ package com.msd.fundari.utils.enums;
 
 public enum PrototypeOrConcept implements LabeledEnum {
   CONCEPT(new String[] {"Concept", "Концепт", "Yolgiz"}),
-  PROTOTYPE(new String[] {"MVP / Prototype", "MVP / Prototype", "Jamoa bor"});
+  PROTOTYPE(new String[] {"MVP / Прототип", "MVP / Prototype", "Jamoa bor"});
 
   public final String[] labels;
 
@@ -12,11 +12,11 @@ public enum PrototypeOrConcept implements LabeledEnum {
 
   @Override
   public String[] getLabels() {
-    return new String[0];
+    return this.labels;
   }
 
   @Override
   public Enum<?>[] getValues() {
-    return new Enum[0];
+    return values();
   }
 }

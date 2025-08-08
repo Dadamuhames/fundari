@@ -290,6 +290,8 @@ public class BusinessStateController {
 
     fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
 
+    botStateService.setState(chatId, BotState.EVALUATION_END);
+
     businessApplicationFormService.clearForm(chatId);
   }
 }

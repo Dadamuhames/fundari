@@ -6,8 +6,6 @@ import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.IdeaApplicationForm;
 import com.msd.fundari.model.ai.output.IdeaEvalOutput;
-import com.msd.fundari.model.ai.output.StartupEvalOutput;
-import com.msd.fundari.repository.redis.IdeaApplicationFormRepository;
 import com.msd.fundari.service.I18nMessageService;
 import com.msd.fundari.service.ai.AiOutputSerializerService;
 import com.msd.fundari.service.ai.IdeaEvalAiService;
@@ -102,6 +100,8 @@ public class IdeaStateController {
     Long chatId = message.getChatId();
 
     HasATeam hasATeam = (HasATeam) HasATeam.TEAM.valueOfLabel(message.getText());
+
+    log.info("Has a team: {}", hasATeam);
 
     if (hasATeam == null) {
       String inquireTeam = i18nMessageService.message("inquireTeam", lang);
@@ -222,6 +222,8 @@ public class IdeaStateController {
     String report = aiOutputSerializerService.ideaEvalToString(aiOutput, form.getName(), lang);
 
     fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
+
+    botStateService.setState(chatId, BotState.EVALUATION_END);
 
     ideaApplicationFormService.clearForm(chatId);
   }

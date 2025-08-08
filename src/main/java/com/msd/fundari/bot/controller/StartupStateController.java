@@ -280,6 +280,8 @@ public class StartupStateController {
 
     fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
 
+    botStateService.setState(chatId, BotState.EVALUATION_END);
+
     startupApplicationFormService.clearForm(chatId);
   }
 }

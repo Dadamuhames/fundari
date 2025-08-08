@@ -12,6 +12,8 @@ public interface LabeledEnum {
 
       LabeledEnum lE = (LabeledEnum) e;
 
+      System.out.println(Arrays.toString(((LabeledEnum) e).getLabels()));
+
       if (Arrays.asList(((LabeledEnum) e).getLabels()).contains(label)) {
         return lE;
       }

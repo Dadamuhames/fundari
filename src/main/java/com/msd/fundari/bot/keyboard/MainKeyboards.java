@@ -39,7 +39,7 @@ public class MainKeyboards {
     KeyboardRow rowTwo = new KeyboardRow();
 
     String contactBtnText = i18nMessageService.message("contactButton", lang);
-    rowTwo.add(String.format("\uD83D\uDCE9 %s", contactBtnText));
+    rowTwo.add(contactBtnText);
 
     String changeLangText = i18nMessageService.message("changeLangButton", lang);
     rowTwo.add(String.format("\uD83C\uDF10 %s", changeLangText));
@@ -94,10 +94,10 @@ public class MainKeyboards {
     KeyboardRow row = new KeyboardRow();
 
     String evalNewProj = i18nMessageService.message("evalNewProj", lang);
-    row.add(String.format("\uD83D\uDD01 %s", evalNewProj));
+    row.add(evalNewProj);
 
     String contactBtnText = i18nMessageService.message("contactButton", lang);
-    row.add(String.format("\uD83D\uDCE9 %s", contactBtnText));
+    row.add(contactBtnText);
 
     ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(List.of(row));
     replyKeyboardMarkup.setResizeKeyboard(true);

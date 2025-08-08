@@ -12,11 +12,11 @@ public enum HasATeam implements LabeledEnum {
 
   @Override
   public String[] getLabels() {
-    return new String[0];
+    return this.labels;
   }
 
   @Override
   public Enum<?>[] getValues() {
-    return new Enum[0];
+    return values();
   }
 }
