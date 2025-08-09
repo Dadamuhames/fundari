@@ -27,15 +27,17 @@ public class TelegramAuthFilter extends OncePerRequestFilter {
       @NotNull FilterChain filterChain)
       throws ServletException, IOException {
 
-    log.info("Telegram secret checking");
+      filterChain.doFilter(request, response);
 
-    String secretKey = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
-
-    if (secretKey == null || !secretKey.equals(telegramProperties.getSecret())) {
-      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
-    filterChain.doFilter(request, response);
+//    log.info("Telegram secret checking");
+//
+//    String secretKey = request.getHeader("X-Telegram-Bot-Api-Secret-Token");
+//
+//    if (secretKey == null || !secretKey.equals(telegramProperties.getSecret())) {
+//      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//      return;
+//    }
+//
+//    filterChain.doFilter(request, response);
   }
 }

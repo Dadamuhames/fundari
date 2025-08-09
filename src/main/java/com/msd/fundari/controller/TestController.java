@@ -1,6 +1,7 @@
 package com.msd.fundari.controller;
 
 import com.msd.fundari.prompt.BusinessEvalPrompts;
+import com.msd.fundari.service.GoogleSheetsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -10,10 +11,12 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.ResponseFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -21,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestController {
   private final OpenAiChatModel chatModel;
+  private final GoogleSheetsService googleSheetsService;
 
   @GetMapping("/ai/generate")
   public ChatResponse generate() {
@@ -59,5 +63,17 @@ public class TestController {
     Prompt prompt = new Prompt(List.of(systemMessage, message), options);
 
     return this.chatModel.call(prompt);
+  }
+
+  @GetMapping("/sheets")
+  public ResponseEntity<?> testGoogleSheets() {
+    try {
+      googleSheetsService.writeToSheet();
+
+    } catch (IOException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    return ResponseEntity.ok().build();
   }
 }

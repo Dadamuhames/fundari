@@ -126,6 +126,15 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.mysql:mysql-connector-j")
 
+    // google
+
+
+    implementation("com.google.api-client:google-api-client:2.6.0")
+    implementation("com.google.oauth-client:google-oauth-client-jetty:1.35.0")
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20250616-2.0.0")
+
+
+
     // Other dependencies
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
     implementation("commons-codec:commons-codec:1.17.1")
@@ -193,8 +202,8 @@ tasks.compileJava {
 
 tasks.processResources {
     val tokens = mapOf(
-            "application.version" to project.version,
-            "application.description" to project.description
+        "application.version" to project.version,
+        "application.description" to project.description
     )
     filesMatching("**/*.yml") {
         filter<ReplaceTokens>("tokens" to tokens)
