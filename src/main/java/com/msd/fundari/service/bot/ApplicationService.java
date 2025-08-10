@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 @Slf4j
 @Service
@@ -53,6 +54,8 @@ public class ApplicationService {
     return applicationEntity;
   }
 
+
+  @Transactional
   public ApplicationEntity saveStartUpApplication(
       final Long chatId, final StartupApplicationForm form) throws BotException {
     UserEntity user = userService.getUser(chatId);
@@ -77,6 +80,8 @@ public class ApplicationService {
     return applicationEntity;
   }
 
+
+  @Transactional
   public ApplicationEntity saveIdeaApplication(final Long chatId, final IdeaApplicationForm form)
       throws BotException {
 

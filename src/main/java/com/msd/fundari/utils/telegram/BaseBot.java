@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -21,15 +22,15 @@ public abstract class BaseBot implements BaseBotInterface, TelegramWebhookBot {
     telegramClient = new OkHttpTelegramClient(botToken);
   }
 
-  public void sendMessage(long chatId, String text) {
-    sendMessage(chatId, text, null);
+  public Message sendMessage(long chatId, String text) {
+    return sendMessage(chatId, text, null);
   }
 
-  public void sendMessage(long chatId, String text, final ReplyKeyboard keyboardMarkup) {
+  public Message sendMessage(long chatId, String text, final ReplyKeyboard keyboardMarkup) {
     SendMessage sendMessage = new SendMessage(String.valueOf(chatId), text);
     sendMessage.setParseMode("html");
     sendMessage.setReplyMarkup(keyboardMarkup);
-    executeMethod(sendMessage);
+    return (Message) executeMethod(sendMessage);
   }
 
   public Object answerCallback(final String callbackId, final String message) {

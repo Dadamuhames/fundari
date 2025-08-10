@@ -7,6 +7,10 @@ public class IdeaEvalOutput {
   private Evaluation evaluation;
   private String methodology;
 
+  public String getEstimateValue() {
+    return this.evaluation.getEstimatedPotentialValue();
+  }
+
   public String toString(
       final String templateEval, final String templateBasedOn, final String projectName) {
     String basedOnString = evaluation.getBasedOn().toString(templateBasedOn);

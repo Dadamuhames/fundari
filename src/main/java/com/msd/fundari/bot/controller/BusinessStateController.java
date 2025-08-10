@@ -6,7 +6,9 @@ import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.BusinessApplicationForm;
 import com.msd.fundari.model.ai.output.BusinessEvalOutput;
+import com.msd.fundari.service.GoogleSheetsService;
 import com.msd.fundari.service.I18nMessageService;
+import com.msd.fundari.service.LoaderService;
 import com.msd.fundari.service.ai.AiOutputSerializerService;
 import com.msd.fundari.service.ai.BusinessEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
@@ -21,10 +23,16 @@ import com.msd.fundari.utils.telegram.BotState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Component
@@ -40,6 +48,8 @@ public class BusinessStateController {
   private final KeyboardValidation keyboardValidation;
   private final MainKeyboards mainKeyboards;
   private final AiOutputSerializerService aiOutputSerializerService;
+  private final GoogleSheetsService googleSheetsService;
+  private final LoaderService loaderService;
 
   @BotStateHandler(BotState.BUSINESS_PROJECT_NAME)
   public void processProjectName(
@@ -267,8 +277,29 @@ public class BusinessStateController {
   public void processRegionOfActivity(
       final FundariBot fundariBot, final Message message, final String lang) {
     Long chatId = message.getChatId();
-    String region = message.getText();
 
+    try (ExecutorService threadPool = Executors.newCachedThreadPool()) {
+      Future<String> futureTask = threadPool.submit(() -> processApplication(message, lang));
+
+      loaderService.loader(futureTask, fundariBot, chatId, lang);
+
+      String aiReport = futureTask.get();
+
+      threadPool.shutdown();
+
+      // send evaluation end message
+      botStateService.setState(chatId, BotState.EVALUATION_END);
+      fundariBot.sendMessage(chatId, aiReport, mainKeyboards.responseKeyboard(lang));
+
+      businessApplicationFormService.clearForm(chatId);
+    } catch (ExecutionException | InterruptedException e) {
+      log.error("Business application process error: {}", e.getMessage());
+    }
+  }
+
+  private String processApplication(final Message message, final String lang) {
+    Long chatId = message.getChatId();
+    String region = message.getText();
     BusinessApplicationForm form = businessApplicationFormService.getForm(chatId);
     form.setRegionOfActivity(region);
 
@@ -279,19 +310,19 @@ public class BusinessStateController {
       application = applicationService.saveBusinessApplication(chatId, form);
     } catch (BotException e) {
       log.error("Message: {}. ChatId: {}", e.getType().getMessage(), chatId);
-      return;
+      return null;
     }
 
     // send the report
     BusinessEvalOutput aiOutput = businessEvalAiService.evaluateBusiness(application);
 
-    String report =
-        aiOutputSerializerService.businessEvalToString(aiOutput, form.getProjectName(), lang);
+    // send info to google sheets
+    try {
+      googleSheetsService.writeToBusinessSheet(application, aiOutput);
+    } catch (Exception e) {
+      log.error("Google sheets error: {}", e.getMessage());
+    }
 
-    fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
-
-    botStateService.setState(chatId, BotState.EVALUATION_END);
-
-    businessApplicationFormService.clearForm(chatId);
+    return aiOutputSerializerService.businessEvalToString(aiOutput, form.getProjectName(), lang);
   }
 }

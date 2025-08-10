@@ -7,6 +7,10 @@ public class StartupEvalOutput {
   private Evaluation evaluation;
   private String methodology;
 
+  public String getEstimateValue() {
+    return this.evaluation.getEstimatedValue();
+  }
+
   public String toString(
       final String templateEval, final String templateBasedOn, final String projectName) {
     String basedOnString = evaluation.getBasedOn().toString(templateBasedOn);

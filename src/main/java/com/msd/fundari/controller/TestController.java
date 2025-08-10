@@ -24,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestController {
   private final OpenAiChatModel chatModel;
-  private final GoogleSheetsService googleSheetsService;
 
   @GetMapping("/ai/generate")
   public ChatResponse generate() {
@@ -63,17 +62,5 @@ public class TestController {
     Prompt prompt = new Prompt(List.of(systemMessage, message), options);
 
     return this.chatModel.call(prompt);
-  }
-
-  @GetMapping("/sheets")
-  public ResponseEntity<?> testGoogleSheets() {
-    try {
-      googleSheetsService.writeToSheet();
-
-    } catch (IOException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    return ResponseEntity.ok().build();
   }
 }

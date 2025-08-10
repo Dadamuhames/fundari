@@ -2,7 +2,7 @@ package com.msd.fundari.utils.enums;
 
 public enum HasATeam implements LabeledEnum {
   ALONE(new String[] {"Alone", "Один(а)", "Yolgiz"}),
-  TEAM(new String[] {"Has a team", "Есть команда", "Jamoa bor"});
+  TEAM(new String[] {"Have a team", "Есть команда", "Jamoa bor"});
 
   public final String[] labels;
 

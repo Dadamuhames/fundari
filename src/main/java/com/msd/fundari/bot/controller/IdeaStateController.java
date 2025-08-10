@@ -6,7 +6,9 @@ import com.msd.fundari.bot.keyboard.MainKeyboards;
 import com.msd.fundari.entity.ApplicationEntity;
 import com.msd.fundari.entity.redis.IdeaApplicationForm;
 import com.msd.fundari.model.ai.output.IdeaEvalOutput;
+import com.msd.fundari.service.GoogleSheetsService;
 import com.msd.fundari.service.I18nMessageService;
+import com.msd.fundari.service.LoaderService;
 import com.msd.fundari.service.ai.AiOutputSerializerService;
 import com.msd.fundari.service.ai.IdeaEvalAiService;
 import com.msd.fundari.service.bot.ApplicationService;
@@ -25,6 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 @Slf4j
 @Component
 @BotStateController
@@ -39,6 +46,8 @@ public class IdeaStateController {
   private final IdeaApplicationKeyboard ideaApplicationKeyboard;
   private final IdeaEvalAiService ideaEvalAiService;
   private final AiOutputSerializerService aiOutputSerializerService;
+  private final LoaderService loaderService;
+  private final GoogleSheetsService googleSheetsService;
 
   @BotStateHandler(BotState.IDEA_PROJECT_NAME)
   public void processIdeaName(
@@ -206,6 +215,31 @@ public class IdeaStateController {
     IdeaApplicationForm form = ideaApplicationFormService.getForm(chatId);
     form.setHasInvestors(hasInvestors);
 
+    try (ExecutorService threadPool = Executors.newCachedThreadPool()) {
+      Future<String> futureTask = threadPool.submit(() -> processApplication(message, form, lang));
+
+      loaderService.loader(futureTask, fundariBot, chatId, lang);
+
+      String aiReport = futureTask.get();
+
+      threadPool.shutdown();
+
+      // send evaluation end message
+      fundariBot.sendMessage(chatId, aiReport, mainKeyboards.responseKeyboard(lang));
+
+      botStateService.setState(chatId, BotState.EVALUATION_END);
+
+      ideaApplicationFormService.clearForm(chatId);
+
+    } catch (ExecutionException | InterruptedException e) {
+      log.error("Business application process error: {}", e.getMessage());
+    }
+  }
+
+  public String processApplication(
+      final Message message, final IdeaApplicationForm form, final String lang) {
+    Long chatId = message.getChatId();
+
     ApplicationEntity application;
 
     // save application
@@ -213,18 +247,19 @@ public class IdeaStateController {
       application = applicationService.saveIdeaApplication(chatId, form);
     } catch (BotException e) {
       log.error("Message: {}. ChatId: {}", e.getType().getMessage(), chatId);
-      return;
+      return null;
     }
 
     // send the report
     IdeaEvalOutput aiOutput = ideaEvalAiService.evaluateIdea(application);
 
-    String report = aiOutputSerializerService.ideaEvalToString(aiOutput, form.getName(), lang);
+    // send info to google sheets
+    try {
+      googleSheetsService.writeToIdeaSheet(application, aiOutput);
+    } catch (Exception e) {
+      log.error("Google sheets error: {}", e.getMessage());
+    }
 
-    fundariBot.sendMessage(chatId, report, mainKeyboards.responseKeyboard(lang));
-
-    botStateService.setState(chatId, BotState.EVALUATION_END);
-
-    ideaApplicationFormService.clearForm(chatId);
+    return aiOutputSerializerService.ideaEvalToString(aiOutput, form.getName(), lang);
   }
 }

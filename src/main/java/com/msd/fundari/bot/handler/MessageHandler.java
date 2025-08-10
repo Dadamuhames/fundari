@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -43,8 +44,10 @@ public class MessageHandler implements UpdateHandler {
         Object handlerClass = ctx.getBean(beanName);
 
         handler.invoke(handlerClass, fundariBot, message, language.toString().toLowerCase());
-      } catch (Exception e) {
-        log.error("Handler invoke error: {}", e.getMessage());
+      } catch (InvocationTargetException e) {
+            log.error("Handler error: {}", e.getMessage());
+      } catch (IllegalAccessException e) {
+          log.error("Illegal Access Error: {}", e.getMessage());
       }
     }
   }
