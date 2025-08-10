@@ -44,8 +44,13 @@ public class MessageService {
     fundariBot.sendMessage(chatId, startupInquireProjectName);
   }
 
-  // TODO
-  public void contactSupport(final FundariBot fundariBot, final Message message, final String lang) {}
+  public void contactSupport(
+      final FundariBot fundariBot, final Message message, final String lang) {
+    Long chatId = message.getChatId();
+    String contactMessage = i18nMessageService.message("contactSupport", lang);
+
+    fundariBot.sendMessage(chatId, String.format(contactMessage, "@FundariSupportBot"));
+  }
 
   public void changeLanguage(final FundariBot fundariBot, final Long chatId) {
     botStateService.setState(chatId, BotState.LANGUAGE_SELECT);
