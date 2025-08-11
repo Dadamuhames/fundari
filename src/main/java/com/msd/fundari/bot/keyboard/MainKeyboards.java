@@ -42,7 +42,7 @@ public class MainKeyboards {
     rowTwo.add(contactBtnText);
 
     String changeLangText = i18nMessageService.message("changeLangButton", lang);
-    rowTwo.add(String.format("\uD83C\uDF10 %s", changeLangText));
+    rowTwo.add(changeLangText);
 
     ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(List.of(rowOne, rowTwo));
     replyKeyboardMarkup.setResizeKeyboard(true);
@@ -99,7 +99,12 @@ public class MainKeyboards {
     String contactBtnText = i18nMessageService.message("contactButton", lang);
     row.add(contactBtnText);
 
-    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(List.of(row));
+    KeyboardRow rowTwo = new KeyboardRow();
+
+    String changeLangText = i18nMessageService.message("changeLangButton", lang);
+    rowTwo.add(changeLangText);
+
+    ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(List.of(row, rowTwo));
     replyKeyboardMarkup.setResizeKeyboard(true);
     replyKeyboardMarkup.setOneTimeKeyboard(true);
 

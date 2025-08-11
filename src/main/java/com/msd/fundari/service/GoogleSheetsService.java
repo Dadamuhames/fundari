@@ -71,15 +71,20 @@ public class GoogleSheetsService {
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     String formattedDate = application.getCreatedAt().format(dateFormatter);
 
-    BigDecimal investment =
+    String investment =
         startupApplication.getInvestedMoneyAmount() != null
-            ? startupApplication.getInvestedMoneyAmount()
-            : new BigDecimal(0);
+            ? startupApplication.getInvestedMoneyAmount().toString()
+            : "0";
 
     String competitors =
         startupApplication.getCompetitors() != null
             ? startupApplication.getCompetitors()
             : "No competitors";
+
+    String lastMonthRevenue =
+        startupApplication.getLastMonthRevenue() != null
+            ? startupApplication.getLastMonthRevenue().toString()
+            : "No revenue";
 
     ValueRange body =
         new ValueRange()
@@ -91,10 +96,10 @@ public class GoogleSheetsService {
                         application.getProjectName(),
                         startupApplication.getStage().getLabels()[0],
                         startupApplication.getDescription(),
-                        startupApplication.getLastMonthRevenue(),
-                        startupApplication.getActiveUserCount(),
+                        lastMonthRevenue,
+                        startupApplication.getActiveUserCount().toString(),
                         investment,
-                        startupApplication.getTeamSize(),
+                        startupApplication.getTeamSize().toString(),
                         competitors,
                         startupApplication.getRegionOfActivity(),
                         evaluation.getEstimateValue(),
@@ -120,6 +125,11 @@ public class GoogleSheetsService {
     String hasATeam = ideaApplication.getHasTeam() ? "Да" : "Нет";
     String conceptOrMvp = ideaApplication.getIsConceptOnly() ? "Концепт" : "MVP";
 
+    String difference =
+        ideaApplication.getDifference() != null
+            ? ideaApplication.getDifference()
+            : "No Competitors";
+
     ValueRange body =
         new ValueRange()
             .setValues(
@@ -132,7 +142,7 @@ public class GoogleSheetsService {
                         ideaApplication.getTarget().getLabels()[0],
                         hasATeam,
                         conceptOrMvp,
-                        ideaApplication.getDifference(),
+                        difference,
                         evaluation.getEstimateValue(),
                         evaluation.getMethodology())));
 

@@ -124,7 +124,9 @@ public class StartupStateController {
       return;
     }
 
-    boolean hasProfit = answer.equals("Yes");
+    String localizedYes = i18nMessageService.message("yes", lang);
+
+    boolean hasProfit = answer.equals(localizedYes);
 
     if (hasProfit) {
       botStateService.setState(chatId, BotState.START_UP_LAST_MONTH_PROFIT);

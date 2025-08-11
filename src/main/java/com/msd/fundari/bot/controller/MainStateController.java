@@ -14,10 +14,12 @@ import com.msd.fundari.utils.enums.Languages;
 import com.msd.fundari.utils.enums.ProjectType;
 import com.msd.fundari.utils.telegram.BotState;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.processing.Find;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+@Slf4j
 @Component
 @BotStateController
 @RequiredArgsConstructor
@@ -122,11 +124,18 @@ public class MainStateController {
 
     String evalNewProj = i18nMessageService.message("evalNewProj", lang);
     String contactBtnText = i18nMessageService.message("contactButton", lang);
+    String changeLanguage = i18nMessageService.message("changeLangButton", lang);
+
+
+    log.info("message text: {}, button text: {}", messageText, changeLanguage);
 
     if (messageText.equals(evalNewProj)) {
       messageService.startEvaluation(fundariBot, message, lang);
     } else if (messageText.equals(contactBtnText)) {
       messageService.contactSupport(fundariBot, message, lang);
+    } else if (messageText.equals(changeLanguage)) {
+      log.info("Changing languages");
+      messageService.changeLanguage(fundariBot, message.getChatId());
     }
   }
 }
