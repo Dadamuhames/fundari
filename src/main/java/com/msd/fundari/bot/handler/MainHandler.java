@@ -36,7 +36,7 @@ public class MainHandler {
 
     BotState state = botStateService.getState(chatId);
 
-    if (user == null && !state.equals(BotState.LANGUAGE_SELECT)) {
+    if ((user == null && !state.equals(BotState.LANGUAGE_SELECT)) || (user == null && message.isCommand())) {
       botStateService.setState(chatId, BotState.LANGUAGE_SELECT);
       fundariBot.sendMessage(chatId, "Выберите язык:", mainKeyboards.languageKeyboard());
       return;
