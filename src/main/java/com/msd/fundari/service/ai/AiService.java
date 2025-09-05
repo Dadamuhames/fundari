@@ -22,7 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AiService {
   private final OpenAiChatModel chatModel;
-  private final EvaluationReportService evaluationReportService;
 
   public ChatResponse getAiResponse(final String input, final String systemPrompt) {
     Message message = new UserMessage(input);
