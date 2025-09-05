@@ -49,7 +49,7 @@ public class MessageService {
     Long chatId = message.getChatId();
     String contactMessage = i18nMessageService.message("contactSupport", lang);
 
-    fundariBot.sendMessage(chatId, String.format(contactMessage, "@FundariSupportBot"));
+    fundariBot.sendMessage(chatId, String.format(contactMessage, "@velturesupportbot"));
   }
 
   public void changeLanguage(final FundariBot fundariBot, final Long chatId) {
